@@ -130,22 +130,42 @@ def main() -> None:
     awake  = stage.get("total_awake_time_milli")  or 0
     sleep_ms = in_bed - awake
 
+    today = date.today().isoformat()
     row = [
-        date.today().isoformat(),
+        today,
         round(sleep_ms / 3_600_000, 1) if sleep_ms > 0 else "",
         round(rec.get("hrv_rmssd_milli") or 0, 1) or "",
         round(rec.get("resting_heart_rate") or 0, 1) or "",
         rec.get("recovery_score") or "",
     ]
 
-    svc.spreadsheets().values().append(
-        spreadsheetId=SHEET_ID,
-        range=f"'{TAB_WHOOP}'!A:E",
-        valueInputOption="USER_ENTERED",
-        insertDataOption="INSERT_ROWS",
-        body={"values": [row]},
-    ).execute()
-    print(f"appended: {row}")
+    # Idempotent upsert: if today's row already exists, update it; else append.
+    existing = svc.spreadsheets().values().get(
+        spreadsheetId=SHEET_ID, range=f"'{TAB_WHOOP}'!A:E"
+    ).execute().get("values", [])
+    update_row = None
+    for i, r in enumerate(existing[1:], start=2):
+        if r and r[0] == today:
+            update_row = i
+            break
+
+    if update_row:
+        svc.spreadsheets().values().update(
+            spreadsheetId=SHEET_ID,
+            range=f"'{TAB_WHOOP}'!A{update_row}:E{update_row}",
+            valueInputOption="USER_ENTERED",
+            body={"values": [row]},
+        ).execute()
+        print(f"updated row {update_row}: {row}")
+    else:
+        svc.spreadsheets().values().append(
+            spreadsheetId=SHEET_ID,
+            range=f"'{TAB_WHOOP}'!A:E",
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body={"values": [row]},
+        ).execute()
+        print(f"appended: {row}")
 
 
 if __name__ == "__main__":
