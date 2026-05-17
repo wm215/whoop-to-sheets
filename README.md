@@ -1,4 +1,4 @@
-# revamp-pipeline
+# whoop-to-sheets
 
 Cloud-hosted automation for the **Revamp** training/recovery Google Sheet.
 
