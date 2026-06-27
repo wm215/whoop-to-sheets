@@ -19,6 +19,7 @@ import os
 from datetime import date
 
 import httpx
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
@@ -169,4 +170,13 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except RefreshError as exc:
+        if "invalid_grant" in str(exc):
+            print(
+                "::warning::Google refresh token is expired or revoked. "
+                "Re-run reauth and update the GOOGLE_REFRESH_TOKEN secret."
+            )
+            raise SystemExit(0) from exc
+        raise

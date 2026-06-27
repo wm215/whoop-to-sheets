@@ -19,6 +19,7 @@ Both run on GitHub Actions — no Mac required.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`
 
 The Google OAuth refresh token must have `https://www.googleapis.com/auth/spreadsheets` scope.
+If `morning-health` logs `invalid_grant`, run `python reauth_google.py` locally and update `GOOGLE_REFRESH_TOKEN`.
 
 ## Manual trigger
 
