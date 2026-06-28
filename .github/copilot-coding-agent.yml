@@ -1,0 +1,2 @@
+# Override the default Copilot coding-agent model for this repository.
+model: sweagent-capi:claude-sonnet-4
